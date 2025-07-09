@@ -17,6 +17,7 @@ Alle Transkripte können sicher auf deinem eigenen Server gespeichert und jederz
 
 * **Echtzeit-Transkription:** Verfolge das Gesprochene live als Text auf deinem Bildschirm.
 * **Live KI-Fragen & Antworten:** Erkennt automatisch Fragen im Transkript (z.B. "Was ist die Quadratwurzel aus 9?") und lässt die OpenAI-API eine Antwort generieren, die in einer separaten Spalte erscheint. Diese Funktion ist optional an- und abschaltbar.
+* **Sprecher-Erkennung (Diarization):** Nimmt die komplette Audiosession auf und speichert sie als Datei. Im Archiv kann das Transkript nachträglich per Knopfdruck analysiert werden, um Redebeiträge automatisch den jeweiligen Sprechern zuzuordnen (z.B. Sprecher A: ..., Sprecher B: ...).
 * **Intelligente Zusammenfassungen:** Erstelle nach jeder Sitzung eine prägnante Zusammenfassung der wichtigsten Kernaussagen und einem Fazit.
 * **Flexibler Prompt:** Passe den Befehl für die Zusammenfassung nach deinen Wünschen an, um unterschiedliche Ergebnisse zu erzielen.
 * **Sicheres Archiv:** Speichere alle Transkripte mit einem Zeitstempel auf deinem eigenen Server und greife jederzeit darauf zu.
