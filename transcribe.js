@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Q&A Elemente
     const qaContainer = document.getElementById('qaContainer');
-    const qaToggle = document.getElementById('qaToggle'); // NEU
+    const qaToggle = document.getElementById('qaToggle');
 
     // Zusammenfassungs-Modal
     const summaryModal = document.getElementById('summaryModal');
@@ -25,12 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const archiveText = document.getElementById('archiveText');
     const customPrompt = document.getElementById('customPrompt');
     const reSummarizeBtn = document.getElementById('reSummarizeBtn');
+    const diarizeBtn = document.getElementById('diarizeBtn'); // NEU
     const archiveCloseBtn = archiveViewModal.querySelector('.close-btn');
 
     // --- 2. Globale Variablen ---
     let ws, audioContext, mediaStream, pcmNode;
     let finalTranscriptSegments = [];
     let currentDeltaText = '';
+    let mediaRecorder; // NEU: Für die Audioaufnahme
+    let audioChunks = []; // NEU: Speichert die Audio-Daten
 
     // --- 3. Kernfunktionen ---
 
@@ -44,14 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
         summarizeBtn.style.display = 'none';
         saveTranscriptBtn.style.display = 'none';
         saveTranscriptBtn.disabled = false;
-        saveTranscriptBtn.textContent = 'Transkript speichern';
+        saveTranscriptBtn.textContent = 'Transkript & Audio speichern';
         qaContainer.innerHTML = '';
-        qaToggle.disabled = true; // NEU
+        qaToggle.disabled = true;
         
         startBtn.disabled = true;
         transcriptPre.innerText = '';
         finalTranscriptSegments = [];
         currentDeltaText = '';
+        audioChunks = []; // NEU: Audio-Chunks zurücksetzen
 
         try {
             const res = await fetch('start_session.php', { method: 'POST' });
@@ -60,6 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const token = data.token;
 
             mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            
+            // NEU: MediaRecorder initialisieren
+            mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                }
+            };
+            mediaRecorder.start(); // Aufnahme starten
 
             const wsUrl = "wss://api.openai.com/v1/realtime?intent=transcription";
             const wsProtocols = ["realtime", `openai-insecure-api-key.${token}`, "openai-beta.realtime-v1"];
@@ -68,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ws.onopen = () => {
                 console.log("WebSocket-Verbindung zu OpenAI geöffnet. ✅");
                 stopBtn.disabled = false;
-                qaToggle.disabled = false; // NEU
+                qaToggle.disabled = false;
                 initAudioStreaming();
             };
         
@@ -79,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const final = msg.transcript?.trim();
                         if (final) {
                             finalTranscriptSegments.push(final);
-                            // NEU: Prüfe, ob der Satz eine Frage ist UND ob der Schalter aktiv ist
                             if (final.includes('?') && qaToggle.checked) {
                                 getAnswerForQuestion(final);
                             }
@@ -103,9 +115,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pcmNode) { pcmNode.disconnect(); }
         if (audioContext && audioContext.state !== 'closed') { audioContext.close(); }
 
+        // NEU: Aufnahme stoppen
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+
         startBtn.disabled = false;
         stopBtn.disabled = true;
-        qaToggle.disabled = true; // NEU
+        qaToggle.disabled = true;
         console.log("Session bereinigt.");
         if (finalTranscriptSegments.length > 0) {
             summarizeBtn.style.display = 'inline-block';
@@ -134,24 +151,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(err => { console.error("Fehler beim Laden des AudioWorklet:", err); cleanup(); });
     }
 
-    // --- 4. Q&A-Funktionalität ---
-
+    // --- 4. Q&A-Funktionalität (unverändert) ---
     async function getAnswerForQuestion(question) {
         const qaItem = document.createElement('div');
         qaItem.className = 'qa-item';
-        
         const questionEl = document.createElement('div');
         questionEl.className = 'question';
-        questionEl.textContent = question; // Angepasst: Kein "Frage:"-Präfix mehr
-        
+        questionEl.textContent = question;
         const answerEl = document.createElement('div');
         answerEl.className = 'answer loading';
         answerEl.textContent = 'Antwort wird gesucht...';
-        
         qaItem.appendChild(questionEl);
         qaItem.appendChild(answerEl);
         qaContainer.prepend(qaItem);
-
         try {
             const response = await fetch('answer_question.php', {
                 method: 'POST',
@@ -160,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (!response.ok) { throw new Error(result.error || 'Unbekannter Fehler'); }
-            
             answerEl.textContent = result.answer;
             answerEl.classList.remove('loading');
         } catch (err) {
@@ -169,8 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 5. Archiv-Funktionalität ---
-
+    // --- 5. Archiv-Funktionalität (mit Anpassungen) ---
     async function loadArchive() {
         try {
             const response = await fetch('archive_handler.php?action=list_files');
@@ -196,18 +206,76 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.error) throw new Error(data.error);
 
-            const friendlyName = filename.replace('.txt', '').replace('transkript_', '').replace('_', ' um ') + ' Uhr';
+            const friendlyName = filename.replace('.txt', '').replace('transkript_', '').replace(/_/g, ' um ').replace('Uhr', '') + ' Uhr';
             archiveTitle.textContent = `Archiviertes Transkript: ${friendlyName}`;
-            archiveText.textContent = data.content;
+            archiveText.textContent = data.content; // Originaltext anzeigen
             customPrompt.value = defaultSummaryPrompt;
+            
+            // NEU: Dateinamen am Modal speichern für die Diarization
+            archiveViewModal.dataset.filename = filename;
+            
+            // NEU: Diarize-Button initialisieren
+            diarizeBtn.disabled = false;
+            diarizeBtn.textContent = 'Sprecher analysieren';
+
             archiveViewModal.style.display = 'block';
         } catch (err) {
             alert(`Fehler beim Öffnen des Transkripts: ${err.message}`);
         }
     }
 
-    // --- 6. Wiederverwendbare UI-Funktionen ---
+    // NEU: Funktion zur Sprecheranalyse (Diarization)
+    diarizeBtn.onclick = async () => {
+        const filename = archiveViewModal.dataset.filename;
+        if (!filename) {
+            alert('Keine Datei für die Analyse ausgewählt.');
+            return;
+        }
 
+        const originalText = diarizeBtn.textContent;
+        diarizeBtn.disabled = true;
+        diarizeBtn.textContent = 'Analysiere...';
+        archiveText.textContent = 'Audiodatei wird zur Sprecheranalyse an OpenAI gesendet...';
+
+        try {
+            const response = await fetch(`diarize.php?file=${encodeURIComponent(filename)}`);
+            const result = await response.json();
+
+            if (!response.ok || result.error) {
+                throw new Error(result.error?.message || 'Unbekannter Fehler bei der Analyse.');
+            }
+
+            if (result.segments && result.segments.length > 0) {
+                // Ordne Sprecher-IDs den Labels A, B, C... zu
+                const speakerLabels = {};
+                let nextSpeakerLabel = 'A';
+                
+                const formattedText = result.segments.map(segment => {
+                    const speakerId = segment.speaker;
+                    if (!(speakerId in speakerLabels)) {
+                        speakerLabels[speakerId] = `Sprecher ${nextSpeakerLabel}`;
+                        nextSpeakerLabel = String.fromCharCode(nextSpeakerLabel.charCodeAt(0) + 1);
+                    }
+                    return `${speakerLabels[speakerId]}: ${segment.text.trim()}`;
+                }).join('\n');
+                
+                archiveText.textContent = formattedText;
+            } else {
+                archiveText.textContent = "Keine Sprecherinformationen gefunden. Das Transkript lautet:\n\n" + result.text;
+            }
+
+        } catch (err) {
+            alert(`Fehler bei der Sprecheranalyse: ${err.message}`);
+            // Bei Fehler den Originaltext wieder laden
+            openTranscript(filename);
+        } finally {
+            diarizeBtn.disabled = false;
+            diarizeBtn.textContent = originalText;
+        }
+    };
+
+
+    // --- 6. UI-Funktionen (mit Anpassungen beim Speichern) ---
     async function executeSummarization(text, prompt) {
         const btn = document.activeElement.id === 'reSummarizeBtn' ? reSummarizeBtn : summarizeBtn;
         const originalText = btn.textContent;
@@ -237,24 +305,39 @@ document.addEventListener('DOMContentLoaded', () => {
         executeSummarization(archiveText.textContent, customPrompt.value);
     };
 
+    // NEU/GEÄNDERT: Speichert Audio und Text zusammen
     saveTranscriptBtn.onclick = async () => {
         const fullText = finalTranscriptSegments.join('\n\n');
-        if (fullText.length < 1) { return; }
+        if (fullText.length < 1 || audioChunks.length === 0) {
+            alert('Keine Daten zum Speichern vorhanden.');
+            return;
+        }
+
         saveTranscriptBtn.disabled = true;
         saveTranscriptBtn.textContent = 'Speichere...';
+
+        // Erstelle eine einzelne Audiodatei aus den Chunks
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+        // Sende beides (Audio und Text) an den Server
+        const formData = new FormData();
+        formData.append('text', fullText);
+        formData.append('audio', audioBlob, 'aufnahme.webm');
+
         try {
-            const response = await fetch('save_transcript.php', {
+            // Beachte: Der Endpunkt wurde geändert
+            const response = await fetch('save_session.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: fullText })
+                body: formData // Kein Content-Type Header bei FormData, der Browser setzt ihn korrekt
             });
             const result = await response.json();
             if (!response.ok) { throw new Error(result.error || 'Unbekannter Serverfehler.'); }
             saveTranscriptBtn.textContent = 'Gespeichert!';
+            loadArchive(); // Archiv neu laden, um die neue Datei anzuzeigen
         } catch (err) {
             alert(`Fehler beim Speichern: ${err.message}`);
             saveTranscriptBtn.disabled = false;
-            saveTranscriptBtn.textContent = 'Transkript speichern';
+            saveTranscriptBtn.textContent = 'Transkript & Audio speichern';
         }
     };
 
