@@ -6,6 +6,8 @@ Alle Transkripte können sicher auf deinem eigenen Server gespeichert und jederz
 
 ![Screenshot von LexiNote]
 ![image](https://github.com/user-attachments/assets/2e439084-7404-4d6a-9ecc-cc7319ab17cf)
+![image](https://github.com/user-attachments/assets/e7d19141-fb3b-4eec-b9f4-4f76641bcbbf)
+![image](https://github.com/user-attachments/assets/6f8088bb-1ad4-4a3c-86e8-09d9bdf44490)
 
 
 
