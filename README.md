@@ -5,8 +5,8 @@ LexiNote ist dein persönlicher KI-Assistent für Vorlesungen, Meetings und jede
 Alle Transkripte können sicher auf deinem eigenen Server gespeichert und jederzeit wieder aufgerufen werden.
 
 ![Screenshot von LexiNote]
-![image](https://github.com/user-attachments/assets/99c14844-7fba-4d1d-aa0c-310c98c72260)
-![image](https://github.com/user-attachments/assets/ed1c9ba2-0be6-40d4-92bf-eacf69f2c0f7)
+![image](https://github.com/user-attachments/assets/2e439084-7404-4d6a-9ecc-cc7319ab17cf)
+
 
 
 ---
