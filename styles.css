@@ -22,45 +22,85 @@ body {
     font-family: 'Inter', sans-serif;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 1rem;
+    padding: 2rem;
     background: var(--color-bg);
     color: var(--color-text);
 }
 
-.container {
-    width: 95%;
-    max-width: 900px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: #fff;
+    text-align: center;
+}
+
+/* Sub-Headline für die Spalten */
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
 }
 
 p {
     margin-bottom: 2rem;
     color: #a0a0a0;
-    max-width: 600px;
+    max-width: 650px;
     text-align: center;
+    line-height: 1.6;
+}
+
+/* --- NEU: Haupt-Layout mit Grid --- */
+.main-container {
+    display: grid;
+    /* Spaltenverhältnis 3:2 */
+    grid-template-columns: 3fr 2fr; 
+    gap: 2rem;
+    width: 100%;
+    max-width: 1600px; /* Begrenzt die maximale Breite */
+    align-items: start; /* Stellt sicher, dass Spalten oben beginnen */
+}
+
+.transcription-column, .qa-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Wichtig für Flexbox-Verhalten */
+}
+
+/* Container für Transkript und F&A sollen scrollbar sein, nicht wachsen */
+#transcriptContainer, #qaContainer {
+    width: 100%;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    /* Wichtig: Höhe festlegen und Scrolling erlauben */
+    height: 65vh;
+    max-height: 700px; /* Setzt eine obere Grenze */
+    overflow-y: auto;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+}
+
+#transcriptText {
+    white-space: pre-wrap; /* Erlaubt Zeilenumbrüche */
+    overflow-wrap: break-word; /* Bricht lange Wörter um */
+    line-height: 1.7;
+    font-size: 1.1rem;
 }
 
 .controls {
     display: flex;
+    flex-wrap: wrap; /* Erlaubt Umbruch bei wenig Platz */
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .btn {
-    padding: 0.8rem 1.8rem;
-    font-size: 1rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
     font-weight: 500;
     border: none;
     border-radius: 8px;
@@ -83,79 +123,6 @@ p {
     box-shadow: none;
 }
 
-#summarizeBtn {
-    background-color: #2ecc71;
-}
-#summarizeBtn:hover {
-    background-color: #27ae60;
-    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
-}
-#summarizeBtn.loading {
-    cursor: wait;
-}
-#logoutBtn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: var(--color-secondary);
-}
-
-#transcriptContainer {
-    width: 100%;
-    background: var(--color-bg-light);
-    color: var(--color-text);
-    padding: 2rem;
-    border-radius: 12px;
-    min-height: 300px;
-    max-height: 60vh;
-    overflow-y: auto;
-    border: 1px solid var(--color-border);
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
-}
-
-#transcriptText {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    line-height: 1.7;
-    font-size: 1.2rem;
-}
-
-/* Modal für die Zusammenfassung */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.7);
-    padding-top: 60px;
-}
-.modal-content {
-    background-color: var(--color-bg-light);
-    margin: 5% auto;
-    padding: 30px;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    width: 80%;
-    max-width: 700px;
-    position: relative;
-}
-.close-btn {
-    color: #aaa;
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-.close-btn:hover {
-    color: #fff;
-}
-/* Füge diese Klasse am Ende deiner styles.css hinzu */
 .btn-secondary {
     background-color: #555;
 }
@@ -164,79 +131,74 @@ p {
     box-shadow: 0 4px 15px rgba(100, 100, 100, 0.2);
 }
 
+#summarizeBtn {
+    background-color: #2ecc71;
+}
+#summarizeBtn:hover {
+    background-color: #27ae60;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+}
 
-/* ... bestehende Stile ... */
+#logoutBtn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--color-secondary);
+}
 
-/* Archiv-Styling */
+/* --- GEÄNDERT: Archiv-Styling --- */
 #archiveContainer {
     width: 100%;
-    margin-top: 3rem;
+    max-width: 1600px; /* Gleiche Breite wie main-container */
+    margin-top: 3rem; /* Abstand nach oben */
     padding-top: 2rem;
     border-top: 1px solid var(--color-border);
 }
+
 #archiveList {
     list-style: none;
     padding: 0;
     margin-top: 1rem;
+    /* NEU: Grid für die Archiv-Einträge für eine saubere Darstellung */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
 }
+
 #archiveList li {
     background-color: var(--color-bg-light);
     padding: 1rem 1.5rem;
     border-radius: 8px;
-    margin-bottom: 0.5rem;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     border: 1px solid var(--color-border);
 }
+
 #archiveList li:hover {
     background-color: #3c3c3c;
+    transform: translateY(-2px);
 }
 
-/* Styling für das neue Modal und die Textarea */
-.modal-scroll-content {
-    max-height: 300px;
-    overflow-y: auto;
-    background: var(--color-bg);
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    white-space: pre-wrap;
-}
-.summarize-section textarea {
-    width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--color-border);
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    font-family: 'Inter', sans-serif;
-    resize: vertical;
-}
-/* Am Ende der styles.css hinzufügen oder bestehende Regeln anpassen */
-
-/* Header für die Q&A-Spalte */
+/* --- F&A Spalten-Styling --- */
 .qa-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
+    /* Entfernt, da der Titel h2 dies nun übernimmt */
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
-/* Styling für den neuen An/Aus-Schalter */
 .toggle-switch {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
 }
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+
 .slider {
     position: relative;
     cursor: pointer;
@@ -246,6 +208,7 @@ p {
     border-radius: 22px;
     transition: 0.4s;
 }
+
 .slider:before {
     position: absolute;
     content: "";
@@ -257,18 +220,11 @@ p {
     border-radius: 50%;
     transition: 0.4s;
 }
-input:checked + .slider {
-    background-color: var(--color-primary);
-}
-input:checked + .slider:before {
-    transform: translateX(18px);
-}
-input:disabled + .slider {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
 
-/* Verbessertes Styling für die Q&A-Karten */
+input:checked + .slider { background-color: var(--color-primary); }
+input:checked + .slider:before { transform: translateX(18px); }
+input:disabled + .slider { cursor: not-allowed; opacity: 0.5; }
+
 .qa-item {
     background-color: var(--color-bg);
     border: 1px solid var(--color-border);
@@ -277,22 +233,27 @@ input:disabled + .slider {
     margin-bottom: 1rem;
     animation: fadeIn 0.5s ease;
 }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .qa-item .question, .qa-item .answer {
     display: flex;
     align-items: flex-start;
     line-height: 1.6;
 }
+
 .qa-item .question::before, .qa-item .answer::before {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     margin-right: 0.75rem;
     line-height: 1.6;
 }
-.qa-item .question::before {
-    content: '❓';
-}
-.qa-item .answer::before {
-    content: '🤖';
-}
+
+.qa-item .question::before { content: '❓'; }
+.qa-item .answer::before { content: '🤖'; }
+
 .qa-item .question {
     font-weight: 500;
     color: #a0a0a0;
@@ -300,7 +261,105 @@ input:disabled + .slider {
     border-bottom: 1px solid var(--color-border);
     margin-bottom: 0.75rem;
 }
+
 .qa-item .answer.loading {
     font-style: italic;
     color: #a0a0a0;
+}
+
+
+/* --- Modal-Styling (leicht angepasst) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px); /* Moderner Effekt */
+    padding: 2rem;
+}
+
+.modal-content {
+    background-color: var(--color-bg-light);
+    margin: 5% auto;
+    padding: 30px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 750px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover { color: #fff; }
+
+.modal-scroll-content {
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--color-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    white-space: pre-wrap;
+    border: 1px solid var(--color-border);
+}
+
+.summarize-section textarea {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* --- NEU: Responsivität für mobile Geräte --- 📱 */
+@media (max-width: 1024px) {
+    .main-container {
+        /* Spalten untereinander anordnen */
+        grid-template-columns: 1fr;
+    }
+    
+    #transcriptContainer, #qaContainer {
+        height: auto; /* Höhe automatisch anpassen */
+        min-height: 250px; /* Mindesthöhe beibehalten */
+        max-height: 50vh; /* Relative Maximalhöhe */
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+    .controls {
+        flex-direction: column;
+    }
+    #logoutBtn {
+        position: static;
+        margin-top: 2rem;
+        width: 100%;
+        text-align: center;
+    }
 }
