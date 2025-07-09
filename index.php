@@ -76,11 +76,13 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
                 <p style="font-size: 0.9rem; margin-bottom: 1rem;">Passe den Befehl an, um die Zusammenfassung nach deinen Wünschen zu gestalten.</p>
                 <textarea id="customPrompt" rows="5"></textarea>
                 <button id="reSummarizeBtn" class="btn">Zusammenfassung mit diesem Prompt erstellen</button>
+                <button id="diarizeBtn" class="btn" style="margin-top: 10px;">Sprecher analysieren</button>
             </div>
         </div>
     </div>
     
     <script>
+        // PHP-Konstante an JavaScript übergeben
         const defaultSummaryPrompt = <?php echo json_encode(SUMMARY_PROMPT); ?>;
     </script>
     <script src="transcribe.js"></script>
